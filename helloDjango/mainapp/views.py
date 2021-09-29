@@ -1,6 +1,8 @@
-from django.http import HttpRequest, HttpResponse
+from django.db.models import Count,Max,Min,Avg,Sum
+from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.shortcuts import render, redirect
-from mainapp.models import UserEntity
+from mainapp.models import *
+
 
 # Create your views here.
 
@@ -59,3 +61,17 @@ def delete_user(request):
         return redirect('/user/list')
     except:
         return HttpResponse('此用户不存在', status=400)
+
+def find_fruit(request):
+    price1 = request.GET.get('price1',0)
+    price2 = request.GET.get('price2',1000)
+    fruits = FruitEntity.objects.filter(price__gte = price1,price__lte = price2).all()
+    return render(request,'fruit/list.html',locals())
+
+def find_store(request):
+    stores = StoreEntity.objects.filter(create_time__year=2021)
+    return render(request,'store/list.html',locals())
+
+def count_fruit(request):
+    result = FruitEntity.objects.aggregate(cnt = Count('name'),max=Max('price'),min = Min('price'),avg = Avg('price'),total=Sum('price'))
+    return JsonResponse(result)
